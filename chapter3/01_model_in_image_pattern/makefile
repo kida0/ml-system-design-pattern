@@ -1,0 +1,10 @@
+.PYHONY: build
+build: 
+	docker build \
+		-t ${DOCKER_REPOSITORY}L${MODEL_IN_IMAGE_PATTERN}_${IMAGE_VERSION} \
+		-f ${DOCKERFILE} \
+		.
+
+.PHONY: push
+push:
+	docker push ${DOCKER_REPOSITORY}:${MODEL_IN_IMAGE_PATTERN}_${IMAGE_VERSION}

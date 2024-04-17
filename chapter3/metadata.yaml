@@ -1,0 +1,27 @@
+# metadata를 통해 추론기 관리
+# 인프라: 서버, CPU, 메모리, 스토리지, 네트워크
+# OS: Linux, Windows 등
+# 런타임: 추론 런타임 ONNX, TensorFlow Serving 등
+# 모델 파일: 이미 학습된 모델 파일
+# 프로그램: 추론 요청에 대해 전처리, 추론, 후처리를 수행하고 응답하는 프로그램
+metadata:
+  train:
+    docker_image: my-docker-image:latest
+    python_version: 3.8.1
+    device: gpu
+  inference:
+    inference_type: classification
+    input_data_type: jpg
+    output_data_type: float16
+    output_data_shape: [1, 1000]
+    device: cpu
+    process:
+      docker_image: python:3.8-slim
+      python_version: 3.8.1
+      library: requirements.txt
+      code_path: ./src/preprocess
+      input_shape: [1, 3, 199, 199]
+      input_type: float16
+  predict:
+    docker_image: mcr.microsoft.com/onnxruntime/server:v.1.5.2
+    model_path: ./models/model.onnx

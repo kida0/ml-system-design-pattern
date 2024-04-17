@@ -1,0 +1,19 @@
+app:
+  name: model-in-image
+  namespace: model-in-image
+  replicas: 2
+  image: shibui/ml-system-in-actions
+  tag: model_in_image_pattern_0.0.1
+  port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 300Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+service:
+  type: ClusterIP
+  port: 80
+  protocol: TCP
