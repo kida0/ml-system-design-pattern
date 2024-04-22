@@ -1,0 +1,60 @@
+FROM python:3.8-slim as builder
+
+ARG SERVER_DIR=resnet50_onnx_runtime
+ENV PROJECT_DIR /app
+WORKDIR ${PROJECT_DIR}
+
+COPY ./${SERVER_DIR}/requirements.txt ./
+COPY ./${SERVER_DIR}/extract_resnet50_onnx.py ./
+COPY ./src/ml/transformers.py ./src/ml/
+COPY ./data/cat.jpg ./data/
+COPY ./data/image_net_labels.json ./data/
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends apt-utils gcc && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y apt-utils gcc && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* \
+    python -m extract_resnet50_onnx --prep
+
+# python -m extract_resnet50_onnx --prep:
+# extract_resnet50_onnx.py 파일을 Python 모듈로 실행합니다.
+# -m 옵션을 사용하여 모듈 이름을 지정하고, --prep 인자를 전달합니다.
+# 이 명령어는 ResNet50 모델을 ONNX 형식으로 추출하고 전처리하는 역할을 합니다.
+
+
+FROM python:3.8-slim
+
+ENV PROEJCT_DIR /app
+ENV MODEL_BASE_PATH=${PROJECT_DIR}/models
+
+WORKDIR ${PROEJCT_DIR}
+
+COPY ./requirements.txt ./
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends apt-utils gcc && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y apt-utils gcc && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* &&
+
+COPY ./src/ ./src/
+COPY --from=builder /${PROEJCT_DIR}/models/ ./models/
+COPY ./data/cat.jpg ./data/
+COPY ./data/image_net_labels.json ./data/
+
+ENV PREPROCESS_TRANSFORMER_PATH ./models/preprocess_transformer.pkl
+ENV SOFTMAX_TRANSFORMER_PATH ./models/softmax_transformer.pkl
+ENV SAMPLE_IMAGE_PATH ./data/cat.jpg
+ENV LABEL_PATH ./data/image_net_labels.json
+ENV LOG_LEVEL DEBUG
+ENV LOG_FORMAT TEXT
+
+COPY ./run.sh ./
+RUN chmod +x ./run.sh
+
+CMD ["./run.sh"]
