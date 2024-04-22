@@ -1,3 +1,5 @@
+ns:
+  name: model-in-image
 app:
   name: model-in-image
   namespace: model-in-image
