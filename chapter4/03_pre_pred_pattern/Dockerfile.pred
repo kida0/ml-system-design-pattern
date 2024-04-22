@@ -20,20 +20,5 @@ RUN apt-get update -y && \
     python -m extract_resnet50_onnx --pred --prep
 
     
-FROM mcr.microsoft.com/onnxruntime/server:latest
-
-ARG SERVER_DIR=resnet50_onnx_runtime
-ENV PROJECT_DIR app
-ENV MODEL_BASE_PATH=${PROJECT_DIR}/models
-
-WORKDIR /${PROJECT_DIR}
-
-COPY --from=builder /${MODEL_BASE_PATH}/resnet50.onnx /${MODEL_BASE_PATH}/resnet50.onnx
-
-ENV MODEL_PATH /${MODEL_BASE_PATH}/resnet50.onnx
-
-WORKDIR /onnxruntime/server/
-COPY ./${SERVER_DIR}/onnx_runtime_server_entrypoint.sh ./onnx_runtime_server_entrypoint.sh
-RUN chmod +x onnx_runtime_server_entrypoint.sh
-ENTRYPOINT ["./onnx_runtime_server_entrypoint.sh"]
-
+# 위와 같은 포맷으로 여기에 대체 서버 생성: onnx runtime server deprecated
+# 또는 bentoml image를 사용해보기
