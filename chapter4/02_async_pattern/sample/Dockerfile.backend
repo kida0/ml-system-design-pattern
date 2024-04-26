@@ -1,0 +1,23 @@
+FROM python:3.8-slim
+
+ENV MODEL_DIR imagenet_inception_v3
+ENV PROJECT_DIR app
+
+WORKDIR /${PROJECT_DIR}
+
+COPY ./requirements_backend.txt .
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends apt-utils gcc && \
+    pip install --no-cache-dir -r requirements_backend.txt && \
+    apt-get remove -y apt-utils gcc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY ./src/ ./src/
+COPY ./${MODEL_DIR}/data/ ./data/
+
+ENV LOG_LEVEL DEBUG
+ENV LOG_FORMAT TEXT
+
+CMD [ "python", "-m", "src.app.backend.prediction_batch" ]

@@ -1,0 +1,27 @@
+FROM python:3.8-slim
+
+ENV MODEL_DIR imagenet_inception_v3 \
+    PROJECT_DIR app
+
+WORKDIR /${PROJECT_DIR}
+
+COPY ./requirements_proxy.txt .
+
+RUN apt_get update -y && \
+    apt-get -y install --no-install-recommends apt-utils gcc && \
+    pip install --no-cache-dir -r requirements_proxy.txt && \
+    apt-get remove -y apt-utils gcc && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+    
+COPY ./src/ ./src/
+COPY ./${MODEL_DIR}/data/ ./data/
+
+ENV LOG_LEVEL DEBUG
+ENV LOG_FORMAT TEXT
+
+COPY ./run.sh .
+RUN chmod +x ./run.sh
+
+CMD [ "./run.sh" ]
